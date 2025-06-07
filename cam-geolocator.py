@@ -71,7 +71,6 @@ def get_closest_caltrans_cameras(user_lat, user_lon, top_n=5):
                 if lat and lon and image_url:
                     distance = haversine(user_lat, user_lon, float(lat), float(lon))
                     camera_list.append({
-                        "id": cctv.get("id", "Unknown ID"),
                         "description": location.get("locationName", "No Description"),
                         "latitude": float(lat),
                         "longitude": float(lon),
@@ -88,8 +87,17 @@ def get_closest_caltrans_cameras(user_lat, user_lon, top_n=5):
 
 # Example usage:
 if __name__ == "__main__":
-    user_latitude = 37.7749  # Example: San Francisco latitude
-    user_longitude = -122.4194  # Example: San Francisco longitude
+    given_address = False
+    if(input("Do you want to enter address(a), or do you want to enter coordinates(c): ")) == "a":
+        given_address = True
+        address = input("Enter address: ")
+    if(given_address):
+        geocoded_address = geocode(address)
+        user_latitude = geocoded_address[0]
+        user_longitude = geocoded_address[1]
+    else:
+        inputted_coords = input("Enter lat/long seperated by a space: ")
+        user_latitude, user_longitude = map(int, inputted_coords.split())
     closest_cams = get_closest_caltrans_cameras(user_latitude, user_longitude)
     for cam in closest_cams:
-        print(f"{cam['id']} -- {cam['description']} ({cam['distance_km']:.2f} km): {cam['image_url']}")
+        print(f"{cam['description']} ({cam['distance_km']:.2f} km): {cam['image_url']}")
