@@ -27,6 +27,24 @@ def haversine(lat1, lon1, lat2, lon2):
 
     return R * c  # Distance in kilometers
 
+def extract_current_images(camera_data_list):
+    current_images = []
+
+    for camera in camera_data_list:
+        # Drill down into the nested structure
+        image_data = camera.get('imageData', {})
+        current_url = image_data.get('static', {}).get('currentImageURL')
+
+        if current_url:
+            current_images.append({
+                'location': camera.get('location', {}).get('locationName', 'Unknown'),
+                'route': camera.get('location', {}).get('route', 'Unknown'),
+                'direction': camera.get('location', {}).get('direction', 'Unknown'),
+                'currentImageURL': current_url
+            })
+
+    return current_images
+
 def get_closest_caltrans_cameras(user_lat, user_lon, top_n=5):
     """
     Fetches CCTV camera data from all Caltrans districts and returns the top_n closest cameras.
@@ -49,10 +67,11 @@ def get_closest_caltrans_cameras(user_lat, user_lon, top_n=5):
                 image_data = cctv.get("imageData", {})
                 lat = location.get("latitude")
                 lon = location.get("longitude")
-                image_url = image_data.get("static")
+                image_url = image_data.get("static", {}).get("currentImageURL")
                 if lat and lon and image_url:
                     distance = haversine(user_lat, user_lon, float(lat), float(lon))
                     camera_list.append({
+                        "id": cctv.get("id", "Unknown ID"),
                         "description": location.get("locationName", "No Description"),
                         "latitude": float(lat),
                         "longitude": float(lon),
@@ -73,4 +92,4 @@ if __name__ == "__main__":
     user_longitude = -122.4194  # Example: San Francisco longitude
     closest_cams = get_closest_caltrans_cameras(user_latitude, user_longitude)
     for cam in closest_cams:
-        print(f"{cam['description']} ({cam['distance_km']:.2f} km): {cam['image_url']}")
+        print(f"{cam['id']} -- {cam['description']} ({cam['distance_km']:.2f} km): {cam['image_url']}")
