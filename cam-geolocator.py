@@ -3,6 +3,9 @@
 # For scraping live security cam websites for footage
 from bs4 import BeautifulSoup
 import requests
+# For displaying cctv images in a collage
+from PIL import Image
+from io import BytesIO
 # Using Nominatim to convert address that user provides to coords for simplicity
 from geopy.geocoders import Nominatim
 # Calculating distances
@@ -45,7 +48,7 @@ def extract_current_images(camera_data_list):
 
     return current_images
 
-def get_closest_caltrans_cameras(user_lat, user_lon, top_n=5):
+def get_closest_caltrans_cameras(user_lat, user_lon, top_n=6):
     """
     Fetches CCTV camera data from all Caltrans districts and returns the top_n closest cameras.
     """
@@ -85,9 +88,47 @@ def get_closest_caltrans_cameras(user_lat, user_lon, top_n=5):
     closest_cameras = sorted(camera_list, key=lambda x: x["distance_km"])[:top_n]
     return closest_cameras
 
+def display_collage(image_urls): 
+    # Max amt of columns
+    max_columns = 3
+
+    # Download all the images
+    images = []
+    for url in image_urls:
+        try:
+            response = requests.get(url, timeout=5)
+            response.raise_for_status()
+            img = Image.open(BytesIO(response.content)).convert("RGB")
+            images.append(img)
+        except Exception as e:
+            print(f"Error downloading {url}: {e}")
+    
+    # Resize all images to be the same if needed
+    standard_size = (320, 240)  # width x height
+    images = [img.resize(standard_size) for img in images]
+
+    # Create the collage and display it
+    cols = min(max_columns, len(images))
+    rows = math.ceil(len(images) / cols)
+    collage_width = cols * standard_size[0]
+    collage_height = rows * standard_size[1]
+
+    collage = Image.new('RGB', (collage_width, collage_height), color=(0, 0, 0))
+
+    for idx, img in enumerate(images):
+        x = (idx % cols) * standard_size[0]
+        y = (idx // cols) * standard_size[1]
+        collage.paste(img, (x, y))
+
+    collage.save("traffic_cam_collage.jpg")
+    collage.show()
+
+
+
 # Example usage:
 if __name__ == "__main__":
     given_address = False
+
     if(input("Do you want to enter address(a), or do you want to enter coordinates(c): ")) == "a":
         given_address = True
         address = input("Enter address: ")
@@ -97,7 +138,13 @@ if __name__ == "__main__":
         user_longitude = geocoded_address[1]
     else:
         inputted_coords = input("Enter lat/long seperated by a space: ")
-        user_latitude, user_longitude = map(int, inputted_coords.split())
+        user_latitude, user_longitude = map(float, inputted_coords.split())
+
     closest_cams = get_closest_caltrans_cameras(user_latitude, user_longitude)
+    image_urls = []
+
     for cam in closest_cams:
+        image_urls.append(cam['image_url'])
         print(f"{cam['description']} ({cam['distance_km']:.2f} km): {cam['image_url']}")
+
+    display_collage(image_urls)
