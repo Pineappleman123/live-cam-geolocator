@@ -1,7 +1,6 @@
 # Author: Andrew Perevoztchikov
 
 # For scraping live security cam websites for footage
-from bs4 import BeautifulSoup
 import requests
 # For displaying cctv images in a collage
 from PIL import Image
@@ -120,12 +119,10 @@ def display_collage(image_urls):
         y = (idx // cols) * standard_size[1]
         collage.paste(img, (x, y))
 
-    collage.save("traffic_cam_collage.jpg")
+    # collage.save("traffic_cam_collage.jpg")
     collage.show()
 
 
-
-# Example usage:
 if __name__ == "__main__":
     given_address = False
 
