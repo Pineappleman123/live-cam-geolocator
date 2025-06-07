@@ -7,7 +7,7 @@ This Python utility fetches and visualizes traffic camera data from Caltrans (Ca
 ## Features
 
 - Geolocation-based camera lookup via address or GPS coordinates
-- Integration with the Caltrans CCTV API across all 12 California districts
+- Uses Caltrans CCTV JSON across all 12 California districts to lookup cameras
 
 ---
 
