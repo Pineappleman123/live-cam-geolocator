@@ -1,7 +1,5 @@
 # Caltrans CCTV Camera Scraper and Visualizer
 
-### Author: Andrew Perevoztchikov
-
 This Python utility fetches and visualizes traffic camera data from Caltrans (California Department of Transportation) CCTV feeds. It allows users to enter a physical address or GPS coordinates, then automatically locates and displays images from the nearest live traffic cameras in a collage format.
 
 ---
